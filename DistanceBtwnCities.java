@@ -16,22 +16,41 @@ import javax.json.stream.JsonParsingException;
 class DistanceBtwnCities {
   private static HttpURLConnection connection;
   
-  //Get the url to the api
-  static String urlBeginning = "https://maps.googleapis.com/maps/api/geocode/json?address=";
-  static String apiKey = "&key=AIzaSyCgUUPw5E6Bfdel8JCaGvLdY6M1saCwV7Q";
-  static String fullUrl = urlBeginning + getAddress() + apiKey;
-  
-  static BufferedReader reader;
-  static String line;
-  static StringBuffer responseContent = new StringBuffer();
-  
   public static void main(String[] args) {
+    System.out.println(Arrays.toString(getLocation()));
     System.out.println(Arrays.toString(getLocation()));
   }
   
+    
   
+  /** Asks the user for the address they want to get the coordinates from
+    * @return the address of the place in the coorect format*/
+  public static String getAddress() {
+    //Get the city name from the user
+    String location;
+    System.out.println("What city would you like to get the cooridinates for?");
+    Scanner scan = new Scanner (System.in);
+    location = scan.nextLine().replaceAll(" ", "+").toLowerCase();
+    return location;
+  }
+  
+  
+  /** 
+   * Connects to the google maps api and extracts 
+   * the longatude and latitude of the address asked for
+   * @return an array of JsonNumbers with the coordiantes*/
   public static JsonNumber[] getLocation (){
+    //Get the url to the api
+    String urlBeginning = "https://maps.googleapis.com/maps/api/geocode/json?address=";
+    String apiKey = "&key=AIzaSyCgUUPw5E6Bfdel8JCaGvLdY6M1saCwV7Q";
+    String fullUrl = urlBeginning + getAddress() + apiKey;
+    
+    BufferedReader reader;
+    String line;
+    StringBuffer responseContent = new StringBuffer();
+    
     JsonNumber [] loc = new JsonNumber[2];
+    
     try {
       URL url = new URL (fullUrl);
       connection = (HttpURLConnection) url.openConnection();
@@ -43,7 +62,7 @@ class DistanceBtwnCities {
       
       int status = connection.getResponseCode();
       
-
+      
       // if it doesn't work
       if(status > 299){
         reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
@@ -57,27 +76,29 @@ class DistanceBtwnCities {
           responseContent.append(line);
         }
         
+        //Finds the object
         JsonReader jReader = Json.createReader(new StringReader(responseContent.toString()));
         JsonObject obj = jReader.readObject();
-       
-        //copy code from albumsPractice if this doesn't work
+        //Finds the array results in the object
         JsonArray results = obj.getJsonArray("results");
+        
+        //Goes through results and finds the Geometry object
         for(int i = 0; i < results.size(); i++){
           JsonObject g = results.getJsonObject(i);
           JsonObject geometry = g.getJsonObject("geometry");
+          //Finds the location object in Geometry
           JsonObject location = geometry.getJsonObject("location");
+          //Finds the latitude and longatude in location
           JsonNumber lat = location.getJsonNumber("lat");
           JsonNumber lng = location.getJsonNumber("lng");
+          //adds it to an array
           loc [0] = lat;
           loc [1] = lng;
-          //int[] loc = {lat, lng};
-          //System.out.println(lat.toString());
-          //System.out.println(lng.toString());
         }
         reader.close();
-        jReader.close();// after this is done
+        jReader.close();
       }
-      //System.out.println(responseContent.toString());
+      //If there is an error
     } catch (MalformedURLException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -87,19 +108,12 @@ class DistanceBtwnCities {
     } finally {
       connection.disconnect();
     }
-    
     return loc;
+  }
+  
+  public static void distance (){
     
   }
-  
-  public static String getAddress() {
-    //Get the city name from the user
-    String city;
-    System.out.println("What city would you like to get the cooridinates for?");
-    Scanner scan = new Scanner (System.in);
-    city = scan.nextLine().replaceAll(" ", "+").toLowerCase();
-    return city;
-  }
-  
+
   
 }
