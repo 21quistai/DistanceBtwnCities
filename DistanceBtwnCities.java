@@ -19,8 +19,7 @@ class DistanceBtwnCities {
   private static HttpURLConnection connection;
   
   public static void main(String[] args) {
-    //System.out.println(Arrays.toString(getLocation()));
-    //System.out.println(Arrays.toString(getLocation()));
+    System.out.println("This calculates the shortest distance between to cities");
     distance(getLocation(),getLocation());
   }
   
@@ -31,7 +30,7 @@ class DistanceBtwnCities {
   public static String getAddress() {
     //Get the city name from the user
     String location;
-    System.out.println("What city would you like to get the cooridinates for?");
+    System.out.println("What is one of the cities?");
     Scanner scan = new Scanner (System.in);
     location = scan.nextLine().replaceAll(" ", "+").toLowerCase();
     return location;
@@ -42,7 +41,7 @@ class DistanceBtwnCities {
    * Connects to the google maps api and extracts 
    * the longatude and latitude of the address asked for
    * @return an array of JsonNumbers with the coordiantes*/
-  public static JsonNumber[] getLocation (){
+  public static float[] getLocation (){
     //Get the url to the api
     String urlBeginning = "https://maps.googleapis.com/maps/api/geocode/json?address=";
     String apiKey = "&key=AIzaSyCgUUPw5E6Bfdel8JCaGvLdY6M1saCwV7Q";
@@ -52,7 +51,7 @@ class DistanceBtwnCities {
     String line;
     StringBuffer responseContent = new StringBuffer();
     
-    JsonNumber [] loc = new JsonNumber[2];
+    float [] loc = new float[2];
 
     try {
       URL url = new URL (fullUrl);
@@ -92,10 +91,10 @@ class DistanceBtwnCities {
           //Finds the location object in Geometry
           JsonObject location = geometry.getJsonObject("location");
           //Finds the latitude and longatude in location
-          JsonNumber lat = location.getJsonNumber("lat");
-          JsonNumber lng = location.getJsonNumber("lng");
+          float lat = Float.parseFloat(location.getJsonNumber("lat").toString());
+          float lng = Float.parseFloat(location.getJsonNumber("lng").toString());
           
-          System.out.println(lng_);
+          //System.out.println(lng_);
           //adds it to an array
           loc [0] = lat;
           loc [1] = lng;
@@ -120,11 +119,25 @@ class DistanceBtwnCities {
 
     return loc;
   }
-  
-  public static void distance (JsonNumber[] loc1, JsonNumber[] loc2){
-    System.out.println(Arrays.toString(loc1) + Arrays.toString(loc2));
-    float dist = 0;
-    Math.abs(Math.sqrt(Math.pow((loc1[0] - loc2[0]), 2) + Math.pow((loc1[1] - loc2[1]), 2)));
+  /** 
+   * Formula from https://www.movable-type.co.uk/scripts/latlong.html*/
+  public static void distance (float[] loc1, float[] loc2){
+//    float dist = 0; // not accurate. calculates the difference
+//    dist = (float)(Math.abs(Math.sqrt(Math.pow((loc1[0] - loc2[0]), 2) + Math.pow((loc1[1] - loc2[1]), 2))));
+//    System.out.println(dist);
+    
+    float r = 6371; //radius of earth
+    //latitude in radians
+    //vars with y are latitude / vars with a are longitude
+    float y1 = (float)(loc1[0] * Math.PI/180);
+    float y2 = (float)(loc2[0] * Math.PI/180);
+    float dy = (float)((loc2[0] - loc1[0]) * Math.PI/180);
+    float da = (float)((loc2[1] - loc1[1]) * Math.PI/180);
+    
+    float b = (float)(Math.sin(dy/2) * Math.sin(dy/2) + Math.cos(y1) * Math.cos(y2) * Math.sin(da/2) * Math.sin(da/2));
+    float c = (float)(2 * Math.atan2(Math.sqrt(b), Math.sqrt(1-b)));
+    float d = (float)(r * c);
+    System.out.println(d + "km");
   }
   
   
