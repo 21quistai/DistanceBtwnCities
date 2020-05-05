@@ -7,8 +7,10 @@
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.*;
+import java.lang.Object;
 import javax.json.*;
 import javax.json.stream.JsonParsingException;
 
@@ -17,11 +19,12 @@ class DistanceBtwnCities {
   private static HttpURLConnection connection;
   
   public static void main(String[] args) {
-    System.out.println(Arrays.toString(getLocation()));
-    System.out.println(Arrays.toString(getLocation()));
+    //System.out.println(Arrays.toString(getLocation()));
+    //System.out.println(Arrays.toString(getLocation()));
+    distance(getLocation(),getLocation());
   }
   
-    
+  
   
   /** Asks the user for the address they want to get the coordinates from
     * @return the address of the place in the coorect format*/
@@ -50,14 +53,14 @@ class DistanceBtwnCities {
     StringBuffer responseContent = new StringBuffer();
     
     JsonNumber [] loc = new JsonNumber[2];
-    
+
     try {
       URL url = new URL (fullUrl);
       connection = (HttpURLConnection) url.openConnection();
       
       //request setup
       connection.setRequestMethod("GET");
-      //connection.setConnectionTimeout(5000);
+      connection.setConnectTimeout(5000);
       connection.setReadTimeout(5000);
       
       int status = connection.getResponseCode();
@@ -91,6 +94,8 @@ class DistanceBtwnCities {
           //Finds the latitude and longatude in location
           JsonNumber lat = location.getJsonNumber("lat");
           JsonNumber lng = location.getJsonNumber("lng");
+          
+          System.out.println(lng_);
           //adds it to an array
           loc [0] = lat;
           loc [1] = lng;
@@ -105,15 +110,22 @@ class DistanceBtwnCities {
       e.printStackTrace();
     } catch (JsonParsingException e) {
       e.printStackTrace();
-    } finally {
+      //} catch(SocketTimeoutException e){ 
+      //  System.out.println("Took to long");
+    }finally {
       connection.disconnect();
     }
+    
+
+
     return loc;
   }
   
-  public static void distance (){
-    
+  public static void distance (JsonNumber[] loc1, JsonNumber[] loc2){
+    System.out.println(Arrays.toString(loc1) + Arrays.toString(loc2));
+    float dist = 0;
+    Math.abs(Math.sqrt(Math.pow((loc1[0] - loc2[0]), 2) + Math.pow((loc1[1] - loc2[1]), 2)));
   }
-
+  
   
 }
